@@ -13,14 +13,14 @@
         <div>
             <input id="search-box" placeholder="search for a place">
         </div>
-        <div id="results">
+        <div id="resultsBox">
 
         </div>
    </div>
 </body>
 
 <script>
-    const results = document.getElementById("results");
+    const resultsBox = document.getElementById("resultsBox");
     const search = document.getElementById("search-box");
     search.addEventListener("keyup", async () => {
         const response = await fetch("/api/search?query=" + encodeURIComponent(search.value));
