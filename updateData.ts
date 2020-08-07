@@ -102,7 +102,7 @@ const stripGazetteerData = async () => {
     
     const result: SearchPlace[] = [];
     for (const place of places) {
-        result.push({
+        const minPlace = {
             gazId: place.feat_id,
             name: place.name,
             lon: place.crd_longitude,
@@ -110,7 +110,10 @@ const stripGazetteerData = async () => {
             type: place.feat_type
                 ? place.feat_type.toLowerCase()
                 : undefined
-        })
+        };
+        if (!minPlace.lat || !minPlace.lon || !minPlace.name)
+            continue;
+        result.push(minPlace);
     }
 
     await writeJsonFile(minNZGazetteerFile, result);
