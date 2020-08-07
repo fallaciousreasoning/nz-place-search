@@ -9,14 +9,18 @@
 
 <body>
    <h1>NZ Place Search</h1>
-   <div class="results">
+   <div>
         <div>
             <input id="search-box" placeholder="search for a place">
+        </div>
+        <div id="results">
+
         </div>
    </div>
 </body>
 
 <script>
+    const results = document.getElementById("results");
     const search = document.getElementById("search-box");
     search.addEventListener("keyup", async () => {
         const response = await fetch("/api/search?query=" + encodeURIComponent(search.value));
@@ -25,7 +29,9 @@
     });
 
     const setResults = (results) => {
-        console.log(results);
+        const text = results.map(r =>
+            `<div><b>Result: </b>${r.name}, (lat: ${r.lat}, lng: ${r.lon})</div>`).join('\n');
+        results.innerText = text;
     }
 </script>
 
