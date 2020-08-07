@@ -1,5 +1,6 @@
 export interface SearchPlace {
-    osmId: number;
+    osmId?: number;
+    gazId?: number;
     name: string;
     type: string;
     lat: number;

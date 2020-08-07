@@ -7,9 +7,13 @@ const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[na
 const fullOSMFile = "data/osm_natural_nz_places.json";
 const minOSMFile = "data/min_nz_places.json";
 
-const writeJsonFile = async (path: string, data: any) => {
+const nzGazetteerUrl = "https://gazetteer.linz.govt.nz/gaz.csv";
+const nzGazetteerFile = "data/gazetteer.json";
+const minNZGazetteerFile = "data/min_gazetteer.json";
+
+const writeFile = async (path: string, data: string) => {
     return new Promise((accept, rej) => {
-        fs.writeFile(path, JSON.stringify(data), (err) => {
+        fs.writeFile(path, data, (err) => {
             if (!err)
                 accept();
             else rej(err)
@@ -17,14 +21,23 @@ const writeJsonFile = async (path: string, data: any) => {
     });
 }
 
-const readJsonFile = async (path: string) => {
+const writeJsonFile = async (path: string, data: any) => {
+    await writeFile(path, JSON.stringify(data));
+}
+
+const readFile = async (path: string): Promise<string> => {
     return new Promise((accept, rej) => {
         fs.readFile(path, (err, data) => {
             if (!err)
-                accept(JSON.parse(data.toString()));
+                accept(data.toString());
             else rej(err);
         })
     });
+}
+
+const readJsonFile = async (path: string) => {
+    const text = await readFile(path);
+    return JSON.parse(text);
 }
 
 const refetchOSMData = async () => {
@@ -56,8 +69,58 @@ const stripOSMData = async () => {
     console.log("Wrote minified OSM data to", minOSMFile);
 }
 
+const fetchGazetteerData = async () => {
+    console.log("Fetching nz gazetteer data");
+    const response = await fetch(nzGazetteerUrl);
+    const text = await response.text();
+
+    const lines = text.split('\n');
+    const header = lines[0].split(',');
+    const result = [];
+    for (let i = 1; i < lines.length; ++i) {
+        const values = lines[i].split(',');
+        const place: any = {};
+        for (let j = 0; j < header.length; ++j) {
+            const key = header[j];
+            const value = values[j];
+            if (!key) continue;
+            if (!value) continue;
+
+            place[key] = value;
+        }
+        result.push(place);
+    }
+    await writeFile(nzGazetteerFile, JSON.stringify(result, null, 4));
+    console.log("Wrote nz gazetteer data to", nzGazetteerFile);
+}
+
+const stripGazetteerData = async () => {
+    console.log("Minifying gazetteer data");
+    const places: any[] = await readJsonFile(nzGazetteerFile);
+    
+    const result: SearchPlace[] = [];
+    for (const place of places) {
+        result.push({
+            gazId: place.feat_id,
+            name: place.name,
+            lon: place.crd_longitude,
+            lat: place.crd_latitude,
+            type: place.feat_type
+                ? place.feat_type.toLowerCase()
+                : undefined
+        })
+    }
+
+    await writeJsonFile(minNZGazetteerFile, result);
+    console.log("Wrote minified gazetter data to", minNZGazetteerFile);
+}
+
 (async () => {
     if (!fs.existsSync(fullOSMFile))
         await refetchOSMData();
     await stripOSMData();
+
+    if (!fs.existsSync(nzGazetteerFile))
+        await fetchGazetteerData();
+    await stripGazetteerData();
 })();
