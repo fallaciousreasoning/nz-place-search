@@ -7,9 +7,9 @@ const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[na
 const fullOSMFile = "data/osm_natural_nz_places.json";
 const minOSMFile = "data/min_nz_places.json";
 
-const writeFile = async (path: string, data: any) => {
+const writeJsonFile = async (path: string, data: any) => {
     return new Promise((accept, rej) => {
-        fs.writeFile(path, data, (err) => {
+        fs.writeFile(path, JSON.stringify(data), (err) => {
             if (!err)
                 accept();
             else rej(err)
@@ -33,7 +33,7 @@ const refetchOSMData = async () => {
     const text = await response.json();
     console.log("Fetched data from OSM");
 
-    await writeFile(fullOSMFile, JSON.stringify(text));
+    await writeJsonFile(fullOSMFile, text);
     console.log("Wrote OSM data to ", fullOSMFile);
 };
 
@@ -52,7 +52,7 @@ const stripOSMData = async () => {
         });
     }
 
-    await writeFile(minOSMFile, JSON.stringify(result));
+    await writeJsonFile(minOSMFile, result);
     console.log("Wrote minified OSM data to", minOSMFile);
 }
 
