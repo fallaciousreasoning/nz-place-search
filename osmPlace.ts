@@ -2,7 +2,7 @@ export interface OSMPlace {
     type: string;
     id: number;
     lat: number;
-    lng: number;
+    lon: number;
     tags: {
         [key: string]: string;
     } & {

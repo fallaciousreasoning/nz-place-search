@@ -47,7 +47,7 @@ const stripData = async () => {
             osmId: place.id,
             name: place.tags.name,
             lat: place.lat,
-            lng: place.lng,
+            lon: place.lon,
             type: place.tags.natural
         });
     }

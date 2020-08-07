@@ -3,5 +3,5 @@ export interface SearchPlace {
     name: string;
     type: string;
     lat: number;
-    lng: number;
+    lon: number;
 }
