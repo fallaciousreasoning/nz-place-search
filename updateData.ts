@@ -111,7 +111,7 @@ const stripGazetteerData = async () => {
                 ? place.feat_type.toLowerCase()
                 : undefined
         };
-        if (!minPlace.lat || !minPlace.lon || !minPlace.name)
+        if (isNaN(minPlace.lat) || isNaN(minPlace.lon) || !minPlace.name)
             continue;
         result.push(minPlace);
     }
