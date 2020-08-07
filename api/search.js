@@ -1,4 +1,4 @@
-const data = require("../data/min_nz_places.json");
+const places = require("../data/min_nz_places.json");
 
 function* filterPlaces(query) {
     for (const place of places) {
@@ -10,7 +10,7 @@ function* filterPlaces(query) {
     }
 }
 
-export default (req, res) => {
+module.exports = (req, res) => {
     const query = req.params.query;
     const matchingPlaces = Array.from(filterPlaces(query));
 
