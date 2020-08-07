@@ -2,6 +2,12 @@
 
 This repository provides a simple tool for searching places in NZ.
 
+## Live version
+
+A live test site is available at https://nz-places.now.sh
+
+(the API is available at https://nz-places.now.sh/api/search?query=Aoraki)
+
 ## Run a local search server
 `npm run start`
 
