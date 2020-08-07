@@ -1,8 +1,0 @@
-{
-    "name": "nz-place-search",
-    "version": 1,
-    "routes": [
-        { "src": "/search/.*", "dest": "index.js" },
-        { "src": "/", "status": 404 }
-    ]
-}
