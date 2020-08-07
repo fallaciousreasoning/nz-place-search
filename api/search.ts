@@ -14,6 +14,7 @@ function* filterPlaces(query: string) {
 }
 
 export default (req: NowRequest, res: NowResponse) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Content-Type", "application/json");
   const query = (req.query.query || '') as string;
   const matchingPlaces = Array.from(filterPlaces(query));
