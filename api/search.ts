@@ -15,5 +15,8 @@ function* filterPlaces(query: string) {
 
 export default (req: NowRequest, res: NowResponse) => {
   res.setHeader("Content-Type", "application/json");
-  res.json({ name: 'JohnFoo', email: 'john@example.com' });
+  const query = req.query;
+  res.send(query);
+  // const matchingPlaces = Array.from(filterPlaces(query));
+  // res.json({ name: 'JohnFoo', email: 'john@example.com' });
 }
