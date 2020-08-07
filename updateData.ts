@@ -5,11 +5,13 @@ import { SearchPlace } from "./searchPlace";
 
 const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;";
 const fullOSMFile = "data/osm_natural_nz_places.json";
-const minOSMFile = "data/min_nz_places.json";
+const minOSMFile = "data/min_osm_nz_places.json";
 
 const nzGazetteerUrl = "https://gazetteer.linz.govt.nz/gaz.csv";
 const nzGazetteerFile = "data/gazetteer.json";
 const minNZGazetteerFile = "data/min_gazetteer.json";
+
+const searchFile = "data/min_nz_places.json"
 
 const writeFile = async (path: string, data: string) => {
     return new Promise((accept, rej) => {
@@ -115,6 +117,20 @@ const stripGazetteerData = async () => {
     console.log("Wrote minified gazetter data to", minNZGazetteerFile);
 }
 
+const joinOutputs = async () => {
+    console.log("Joining outputs");
+    const gazPlaces = await readJsonFile(minNZGazetteerFile);
+    const osmPlaces = await readJsonFile(minOSMFile);
+
+    const result = [
+        ...gazPlaces,
+        ...osmPlaces
+    ];
+
+    await writeJsonFile(searchFile, result);
+    console.log("Wrote joined file", searchFile);
+}
+
 (async () => {
     if (!fs.existsSync(fullOSMFile))
         await refetchOSMData();
@@ -123,4 +139,6 @@ const stripGazetteerData = async () => {
     if (!fs.existsSync(nzGazetteerFile))
         await fetchGazetteerData();
     await stripGazetteerData();
+
+    await joinOutputs();
 })();

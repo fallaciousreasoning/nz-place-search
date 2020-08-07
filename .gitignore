@@ -1,5 +1,4 @@
-data/nz_places.json
-data/osm_natural_nz_places.json
+data/
 node_modules/
 build/
 .vercel
