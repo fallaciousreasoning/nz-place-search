@@ -7,7 +7,7 @@ function* filterPlaces(query: string) {
   for (const place of places) {
       const name = place.name;
       if (!name) continue;
-      if (!name.includes(query)) continue;
+      if (!name.toLowerCase().includes(query.toLowerCase())) continue;
 
       yield place;
   }
