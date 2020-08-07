@@ -24,6 +24,27 @@ Querying `http://localhost:3000/search?query=Aoraki` will result in the followin
 ```json
 [
     {
+        "gazId": "26004",
+        "name": "Aoraki/Mount Cook",
+        "lon": "170.141926",
+        "lat": "-43.595348",
+        "type": "hill"
+    },
+    {
+        "gazId": "26005",
+        "name": "Aoraki/Mount Cook",
+        "lon": "170.098209",
+        "lat": "-43.735107",
+        "type": "town"
+    },
+    {
+        "gazId": "48301",
+        "name": "Aoraki/Mount Cook National Park",
+        "lon": "170.285431",
+        "lat": "-43.599748",
+        "type": "national park"
+    },
+    {
         "osmId": 2625064349,
         "name": "Aoraki / Mount Cook",
         "lat": -43.5950017,
