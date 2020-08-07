@@ -20,12 +20,28 @@
 </body>
 
 <script>
+    const debounce = (func, timeout) => {
+        let t;
+        return (...args) => {
+            if (t)
+                clearTimeout(t);
+            
+            t = setTimeout(() => {
+                func(...args);
+            }, timeout);
+        }
+    };
+
+    const debouncedSearch = debounce(async query => {
+        const response = await fetch("/api/search?query=" + encodeURIComponent(query));
+        const results = await response.json();
+        setResults(results);
+    }, 250);
+
     const resultsBox = document.getElementById("resultsBox");
     const search = document.getElementById("search-box");
     search.addEventListener("keyup", async () => {
-        const response = await fetch("/api/search?query=" + encodeURIComponent(search.value));
-        const results = await response.json();
-        setResults(results);
+        debouncedSearch(search.value)
     });
 
     const setResults = (results) => {
