@@ -7,8 +7,26 @@
     <title>NZ Place Search</title>
 </head>
 
-<body style="margin: 0; overflow: hidden;">
-   Hello World
+<body>
+   <h1>NZ Place Search</h1>
+   <div class="results">
+        <div>
+            <input id="search-box" placeholder="search for a place">
+        </div>
+   </div>
 </body>
+
+<script>
+    const search = document.getElementById("search-box");
+    search.addEventListener("keyup", async () => {
+        const response = await fetch("/api/search?query=" + encodeURIComponent(search.value));
+        const results = await response.json();
+        setResults(results);
+    });
+
+    const setResults = (results) => {
+        console.log(results);
+    }
+</script>
 
 </html>
