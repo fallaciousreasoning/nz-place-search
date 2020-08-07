@@ -2,6 +2,7 @@ import fetch from "node-fetch";
 import fs from "fs";
 import { OSMResult } from "./osmPlace";
 import { SearchPlace } from "./searchPlace";
+import { deduplicate } from "./deduplicate";
 
 const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;";
 const fullOSMFile = "data/osm_natural_nz_places.json";
@@ -121,16 +122,18 @@ const stripGazetteerData = async () => {
 }
 
 const joinOutputs = async () => {
-    console.log("Joining outputs");
+    console.log("Joining outputs and deduplicating");
     const gazPlaces = await readJsonFile(minNZGazetteerFile);
     const osmPlaces = await readJsonFile(minOSMFile);
 
     const result = [
         ...gazPlaces,
         ...osmPlaces
-    ];
+    ].filter(r => !!r.name);
 
-    await writeJsonFile(searchFile, result);
+    const deduplicated = deduplicate(result);
+
+    await writeJsonFile(searchFile, deduplicate);
     console.log("Wrote joined file", searchFile);
 }
 
