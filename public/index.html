@@ -31,7 +31,7 @@
     const setResults = (results) => {
         const text = results.map(r =>
             `<div><b>Result: </b>${r.name}, (lat: ${r.lat}, lng: ${r.lon})</div>`).join('\n');
-        results.innerText = text;
+        resultsBox.innerText = text;
     }
 </script>
 
