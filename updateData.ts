@@ -133,7 +133,7 @@ const joinOutputs = async () => {
 
     const deduplicated = deduplicate(result);
 
-    await writeJsonFile(searchFile, deduplicate);
+    await writeJsonFile(searchFile, deduplicated);
     console.log("Wrote joined file", searchFile);
 }
 
