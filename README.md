@@ -15,11 +15,11 @@ The server should be accessible on `localhost:3000`.
 
 ## Querying
 
-Query the server at `/search/query={query}`.
+Query the server at `/api/search/query={query}`.
 
 For example:
 
-Querying `http://localhost:3000/search?query=Aoraki` will result in the following json:
+Querying `http://localhost:3000/api/search?query=Aoraki` will result in the following json:
 
 ```json
 [
