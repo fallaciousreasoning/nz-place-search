@@ -3,7 +3,8 @@ import { SearchPlace } from "./searchPlace";
 const closenessThreshold = 0.05;
 
 const getName = (p: SearchPlace) => p.name.toLowerCase()
-    .replace("mt", "mount");
+    .replace("mt", "mount")
+    .replace(" / ", "/");
 
 const getDist = (p1: SearchPlace, p2: SearchPlace) => {
     const dlat = p1.lat - p2.lat;
