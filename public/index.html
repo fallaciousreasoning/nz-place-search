@@ -46,7 +46,7 @@
 
     const setResults = (results) => {
         const text = results.map(r =>
-            `<div><b>Result (${r.type}): </b><a target="_blank" href="https://nztopo.now.sh/#lat=${r.lat}&lng=${r.lon}&zoom=14&lla=${r.lat}&llo=${r.lon}&lab=${encodeURIComponent(r.name)}" alt="View on map">${r.name}</a>, (lat: ${r.lat}, lng: ${r.lon})</div>`).join('\n');
+            `<div><b>Result: </b><a target="_blank" href="https://nztopo.now.sh/#lat=${r.lat}&lng=${r.lon}&zoom=14&lla=${r.lat}&llo=${r.lon}&lab=${encodeURIComponent(r.name)}" alt="View on map">${r.name} (${r.type})</a>, (lat: ${r.lat}, lng: ${r.lon})</div>`).join('\n');
         resultsBox.innerHTML = text;
     }
 </script>
