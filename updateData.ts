@@ -3,6 +3,7 @@ import fs from "fs";
 import { OSMResult } from "./osmPlace";
 import { SearchPlace } from "./searchPlace";
 import { deduplicate } from "./deduplicate";
+import { writeJsonFile, readJsonFile, writeFile } from "./files";
 
 const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;";
 const fullOSMFile = "data/osm_natural_nz_places.json";
@@ -13,35 +14,6 @@ const nzGazetteerFile = "data/gazetteer.json";
 const minNZGazetteerFile = "data/min_gazetteer.json";
 
 const searchFile = "data/min_nz_places.json"
-
-const writeFile = async (path: string, data: string) => {
-    return new Promise((accept, rej) => {
-        fs.writeFile(path, data, (err) => {
-            if (!err)
-                accept();
-            else rej(err)
-        });
-    });
-}
-
-const writeJsonFile = async (path: string, data: any) => {
-    await writeFile(path, JSON.stringify(data));
-}
-
-const readFile = async (path: string): Promise<string> => {
-    return new Promise((accept, rej) => {
-        fs.readFile(path, (err, data) => {
-            if (!err)
-                accept(data.toString());
-            else rej(err);
-        })
-    });
-}
-
-const readJsonFile = async (path: string) => {
-    const text = await readFile(path);
-    return JSON.parse(text);
-}
 
 const refetchOSMData = async () => {
     console.log("Fetching OSM data from", osmQuery);

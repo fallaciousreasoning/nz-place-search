@@ -5,4 +5,5 @@ export interface SearchPlace {
     type: string;
     lat: number;
     lon: number;
+    county?: string;
 }
