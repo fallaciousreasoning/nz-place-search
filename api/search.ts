@@ -5,12 +5,15 @@ const places: SearchPlace[] = require("../data/min_nz_places.json");
 
 function* filterPlaces(query: string) {
   const queries = [query.toLowerCase()];
+
   // Search for "Mount Foo" as well as "Mt Foo"
   if (queries[0].includes("mt"))
     queries.push(queries[0].replace("mt", "mount"));
   // Search for "Mt Foo" as well as "Mount Foo"
   if (queries[0].includes("mount"))
     queries.push(queries[0].replace("mount", "mt"));
+
+  const seen = new Set()
 
   for (const place of places) {
       const name = place.name;
@@ -20,6 +23,9 @@ function* filterPlaces(query: string) {
       if (!queries.some(q => lowerName.includes(q)))
         continue;
 
+      if (seen.has(place)) continue
+
+      seen.add(place)
       yield place;
   }
 }
