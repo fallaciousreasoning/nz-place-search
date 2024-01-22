@@ -3,6 +3,12 @@ import { SearchPlace } from './searchPlace';
 import { writeJsonFile, readJsonFile } from './files';
 import fs from 'fs';
 
+const getRegions = async () => {
+    const response = await fetch('https://www.overpass-api.de/api/interpreter?[out:json];{{geocodeArea:New Zealand}}->.searchArea;(relation["boundary"="administrative"]["admin_level"="4"](area.searchArea););out;')
+    const json = await response.json();
+    await writeJsonFile('regions.json', json)
+}
+
 export const getCounty = async (lat: number, lng: number) => {
     const url = `https://nominatim.openstreetmap.org/reverse.php?lat=${lat}&lon=${lng}&zoom=8&format=jsonv2&addressdetails=0`;
     const request = await fetch(url);
@@ -17,7 +23,7 @@ export const getCounties = async (places: SearchPlace[]) => {
         : {};
 
     const logProgress = (done: number) => {
-        console.log(`Done ${done}/${places.length} (${Math.round(done / places.length * 10000)/100}%)`);
+        console.log(`Done ${done}/${places.length} (${Math.round(done / places.length * 10000) / 100}%)`);
     }
     const dumpEvery = 10;
 
@@ -50,6 +56,7 @@ export const getCounties = async (places: SearchPlace[]) => {
 }
 
 (async () => {
+    getRegions()
     const places = require('./data/min_nz_places.json');
     const counties = getCounties(places);
     writeJsonFile('data/counties.json', counties);
