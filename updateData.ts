@@ -4,127 +4,100 @@ import { OSMResult } from "./osmPlace";
 import { SearchPlace } from "./searchPlace";
 import { deduplicate } from "./deduplicate";
 import { writeJsonFile, readJsonFile, writeFile } from "./files";
+import path from 'path'
 
-const osmQuery = "https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;";
-const fullOSMFile = "data/osm_natural_nz_places.json";
-const minOSMFile = "data/min_osm_nz_places.json";
+const outputFile = 'data/min_nz_places.json'
 
-const nzGazetteerUrl = "https://gazetteer.linz.govt.nz/gaz.csv";
-const nzGazetteerFile = "data/gazetteer.json";
-const minNZGazetteerFile = "data/min_gazetteer.json";
+interface DataSource {
+    name: string,
+    getData: () => Promise<any>,
+    transformData: (data: any) => SearchPlace[]
+}
 
-const searchFile = "data/min_nz_places.json"
-
-const hutsFile = 'data/huts.json'
-const minHutsFile = 'data/min_huts.json'
-
-const refetchOSMData = async () => {
-    console.log("Fetching OSM data from", osmQuery);
-    const response = await fetch(osmQuery);
-    const text = await response.json();
-    console.log("Fetched data from OSM");
-
-    await writeJsonFile(fullOSMFile, text);
-    console.log("Wrote OSM data to ", fullOSMFile);
-};
-
-const stripOSMData = async () => {
-    console.log("Removing unneeded OSM data...");
-    const osmPlaces = await readJsonFile(fullOSMFile) as OSMResult;
-
-    const result: SearchPlace[] = [];
-    for (const place of osmPlaces.elements) {
-        result.push({
+const sources: DataSource[] = [
+    {
+        name: 'osm',
+        getData: () => fetch('https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;').then(r => r.json()),
+        transformData: (data: any) => data.elements.map((place: any) => ({
             name: place.tags.name,
-            lat: parseFloat(place.lat as any),
-            lon: parseFloat(place.lon as any),
+            lat: place.lat,
+            lon: place.lon,
             type: place.tags.natural
-        });
-    }
+        }))
+    },
+    {
+        name: 'gazetteer',
+        getData: async () => {
+            const text = await fetch('https://gazetteer.linz.govt.nz/gaz.csv').then(r => r.text())
+            const lines = text.split('\n');
+            const header = lines[0].split(',');
+            const result = [];
+            for (let i = 1; i < lines.length; ++i) {
+                const values = lines[i].split(',');
+                const place: any = {};
+                for (let j = 0; j < header.length; ++j) {
+                    const key = header[j];
+                    const value = values[j];
+                    if (!key) continue;
+                    if (!value) continue;
 
-    await writeJsonFile(minOSMFile, result);
-    console.log("Wrote minified OSM data to", minOSMFile);
-}
-
-const fetchGazetteerData = async () => {
-    console.log("Fetching nz gazetteer data");
-    const response = await fetch(nzGazetteerUrl);
-    const text = await response.text();
-
-    const lines = text.split('\n');
-    const header = lines[0].split(',');
-    const result = [];
-    for (let i = 1; i < lines.length; ++i) {
-        const values = lines[i].split(',');
-        const place: any = {};
-        for (let j = 0; j < header.length; ++j) {
-            const key = header[j];
-            const value = values[j];
-            if (!key) continue;
-            if (!value) continue;
-
-            place[key] = value;
-        }
-        result.push(place);
-    }
-    await writeFile(nzGazetteerFile, JSON.stringify(result, null, 4));
-    console.log("Wrote nz gazetteer data to", nzGazetteerFile);
-}
-
-const stripGazetteerData = async () => {
-    console.log("Minifying gazetteer data");
-    const places: any[] = await readJsonFile(nzGazetteerFile);
-
-    const result: SearchPlace[] = [];
-    for (const place of places) {
-        const minPlace = {
+                    place[key] = value;
+                }
+                result.push(place);
+            }
+            return result
+        },
+        transformData: (data: any) => data.map((place: any) => ({
             name: place.name,
             lon: parseFloat(place.crd_longitude),
             lat: parseFloat(place.crd_latitude),
             type: place.feat_type
                 ? place.feat_type.toLowerCase()
                 : undefined
-        };
-        if (isNaN(minPlace.lat) || isNaN(minPlace.lon) || !minPlace.name)
-            continue;
-        result.push(minPlace);
-    }
-
-    await writeJsonFile(minNZGazetteerFile, result);
-    console.log("Wrote minified gazetter data to", minNZGazetteerFile);
-}
-
-const fetchHuts = async () => {
-    if (!fs.existsSync(hutsFile)) {
-        const data = await fetch('https://api.doc.govt.nz/v2/huts?coordinates=wgs84', {
+        })).filter((p: SearchPlace) => !isNaN(p.lat) && !isNaN(p.lon))
+    },
+    {
+        name: 'huts',
+        getData: async () => fetch('https://api.doc.govt.nz/v2/huts?coordinates=wgs84', {
             headers: {
                 'x-api-key': 'yNyjpuXvMJ1g2d0YEpUmW7VZhePMqbCv96GRjq8L'
             }
-        }).then(r => r.json())
-        await writeJsonFile(hutsFile, data)
-    }
-
-    const data = await readJsonFile(hutsFile)
-    const minHuts = []
-    for (const hut of data) {
-        minHuts.push({
+        }).then(r => r.json()),
+        transformData: (data) => data.map((hut: any) => ({
             name: hut.name,
             lat: hut.lat,
             lon: hut.lon,
             type: 'hut'
-        })
+        }))
+    }
+]
+
+const processSource = async (source: DataSource) => {
+    console.log(`Processing ${source.name}`)
+
+    const baseName = path.join('data', source.name)
+    const name = baseName + '.json'
+    const minName = baseName + '.min.json'
+
+    let data: any
+    if (!fs.existsSync(name)) {
+        console.log(`Fetching ${source.name} data`)
+        data = await source.getData()
+        await writeJsonFile(name, data)
+        console.log(`Fetched ${source.name} data`)
+    } else {
+        data = await readJsonFile(name)
     }
 
-    await writeJsonFile(minHutsFile, minHuts)
+    console.log(`Minifying ${source.name}`)
+    const minified = source.transformData(data)
+    writeJsonFile(minName, minified)
+    console.log(`Minified ${source.name}`)
 }
 
 const joinOutputs = async () => {
     console.log("Joining outputs and deduplicating");
-    const minFiles = [
-        minNZGazetteerFile,
-        minOSMFile,
-        minHutsFile
-    ]
+    const minFiles = sources.map(s => path.join('data', s.name + '.min.json'))
 
     const result = (await Promise.all(minFiles.map(f => readJsonFile(f)))
         .then(r => r.flatMap(i => i)))
@@ -132,20 +105,14 @@ const joinOutputs = async () => {
 
     const deduplicated = deduplicate(result);
 
-    await writeJsonFile(searchFile, deduplicated);
-    console.log("Wrote joined file", searchFile);
+    await writeJsonFile(outputFile, deduplicated);
+    console.log("Wrote joined file", outputFile);
 }
 
 (async () => {
-    if (!fs.existsSync(fullOSMFile))
-        await refetchOSMData();
-    await stripOSMData();
-
-    if (!fs.existsSync(nzGazetteerFile))
-        await fetchGazetteerData();
-    await stripGazetteerData();
-
-    await fetchHuts()
+    fs.mkdirSync('data')
+    for (const source of sources)
+        await processSource(source)
 
     await joinOutputs();
 })();
