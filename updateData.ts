@@ -15,6 +15,9 @@ const minNZGazetteerFile = "data/min_gazetteer.json";
 
 const searchFile = "data/min_nz_places.json"
 
+const hutsFile = 'data/huts.json'
+const minHutsFile = 'data/min_huts.json'
+
 const refetchOSMData = async () => {
     console.log("Fetching OSM data from", osmQuery);
     const response = await fetch(osmQuery);
@@ -71,7 +74,7 @@ const fetchGazetteerData = async () => {
 const stripGazetteerData = async () => {
     console.log("Minifying gazetteer data");
     const places: any[] = await readJsonFile(nzGazetteerFile);
-    
+
     const result: SearchPlace[] = [];
     for (const place of places) {
         const minPlace = {
@@ -91,15 +94,41 @@ const stripGazetteerData = async () => {
     console.log("Wrote minified gazetter data to", minNZGazetteerFile);
 }
 
+const fetchHuts = async () => {
+    if (!fs.existsSync(hutsFile)) {
+        const data = await fetch('https://api.doc.govt.nz/v2/huts?coordinates=wgs84', {
+            headers: {
+                'x-api-key': 'yNyjpuXvMJ1g2d0YEpUmW7VZhePMqbCv96GRjq8L'
+            }
+        }).then(r => r.json())
+        await writeJsonFile(hutsFile, data)
+    }
+
+    const data = await readJsonFile(hutsFile)
+    const minHuts = []
+    for (const hut of data) {
+        minHuts.push({
+            name: hut.name,
+            lat: hut.lat,
+            lon: hut.lon,
+            type: 'hut'
+        })
+    }
+
+    await writeJsonFile(minHutsFile, minHuts)
+}
+
 const joinOutputs = async () => {
     console.log("Joining outputs and deduplicating");
-    const gazPlaces = await readJsonFile(minNZGazetteerFile);
-    const osmPlaces = await readJsonFile(minOSMFile);
+    const minFiles = [
+        minNZGazetteerFile,
+        minOSMFile,
+        minHutsFile
+    ]
 
-    const result = [
-        ...gazPlaces,
-        ...osmPlaces
-    ].filter(r => !!r.name);
+    const result = (await Promise.all(minFiles.map(f => readJsonFile(f)))
+        .then(r => r.flatMap(i => i)))
+        .filter(r => !!r.name)
 
     const deduplicated = deduplicate(result);
 
@@ -115,6 +144,8 @@ const joinOutputs = async () => {
     if (!fs.existsSync(nzGazetteerFile))
         await fetchGazetteerData();
     await stripGazetteerData();
+
+    await fetchHuts()
 
     await joinOutputs();
 })();
