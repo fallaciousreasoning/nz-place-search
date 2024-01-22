@@ -69,6 +69,20 @@ const sources: DataSource[] = [
             lon: hut.lon,
             type: 'hut'
         }))
+    },
+    {
+        name: 'mountains',
+        getData: async () => fetch('https://raw.githubusercontent.com/fallaciousreasoning/nz-mountains/main/mountains.json').then(r => r.json()),
+        transformData: data => {
+            return Object.values(data)
+                .filter((mountain: any) => mountain.latlng?.length >= 2)    
+                .map((mountain: any) => ({
+                    name: mountain.name,
+                    type: 'peak',
+                    lat: parseFloat(mountain.latlng[0]),
+                    lon: parseFloat(mountain.latlng[1]),
+                }))
+        }
     }
 ]
 
@@ -110,7 +124,7 @@ const joinOutputs = async () => {
 }
 
 (async () => {
-    fs.mkdirSync('data')
+    if (!fs.existsSync('data')) fs.mkdirSync('data')
     for (const source of sources)
         await processSource(source)
 
