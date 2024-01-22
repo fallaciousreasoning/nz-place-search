@@ -32,7 +32,6 @@ const stripOSMData = async () => {
     const result: SearchPlace[] = [];
     for (const place of osmPlaces.elements) {
         result.push({
-            osmId: place.id,
             name: place.tags.name,
             lat: parseFloat(place.lat as any),
             lon: parseFloat(place.lon as any),
@@ -76,7 +75,6 @@ const stripGazetteerData = async () => {
     const result: SearchPlace[] = [];
     for (const place of places) {
         const minPlace = {
-            gazId: parseInt(place.feat_id),
             name: place.name,
             lon: parseFloat(place.crd_longitude),
             lat: parseFloat(place.crd_latitude),
