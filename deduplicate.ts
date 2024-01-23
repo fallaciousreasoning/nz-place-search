@@ -13,6 +13,10 @@ const getDist = (p1: SearchPlace, p2: SearchPlace) => {
     return Math.sqrt(dlat ** 2 + dlon ** 2);
 }
 
+export const findClose = (p1: SearchPlace, places: SearchPlace[], threshold: number=0.0000001) => {
+    return places.filter(p => getDist(p1, p) < threshold)
+}
+
 const minimalSet = (places: SearchPlace[]) => {
     places = [...places];
     const result: SearchPlace[] = [];
@@ -61,8 +65,18 @@ export const deduplicate = (places: SearchPlace[]) => {
         deduplicated.push(...minSet);
     }
 
-    console.log(`Went from ${places.length} places to ${deduplicated.length} after deduplication`)
-    return deduplicated;
+    const result: SearchPlace[] = []
+    const seen = new Set<SearchPlace>()
+    for (const place of deduplicated) {
+        if (seen.has(place)) continue
+
+        const close = findClose(place, deduplicated).filter(c => c.type === place.type)
+        for (const place of close) seen.add(place)
+        result.push(place)
+    }
+
+    console.log(`Went from ${places.length} places to ${result.length} after deduplication`)
+    return result;
 }
 
 export const fixups = (places: SearchPlace[]) => {
