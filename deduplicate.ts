@@ -10,7 +10,7 @@ const getDist = (p1: SearchPlace, p2: SearchPlace) => {
     const dlat = p1.lat - p2.lat;
     const dlon = p1.lon - p2.lon;
 
-    return Math.sqrt(dlat**2 + dlon**2);
+    return Math.sqrt(dlat ** 2 + dlon ** 2);
 }
 
 const minimalSet = (places: SearchPlace[]) => {
@@ -64,3 +64,24 @@ export const deduplicate = (places: SearchPlace[]) => {
     console.log(`Went from ${places.length} places to ${deduplicated.length} after deduplication`)
     return deduplicated;
 }
+
+export const fixups = (places: SearchPlace[]) => {
+    const typeOverrides: { [type: string]: string } = {
+        "reserve (non-cpa)": 'reserve',
+        "hill": "peak",
+        "pinnacle": "peak"
+    }
+
+    for (const place of places) {
+        if (typeOverrides[place.type]) {
+            place.type = typeOverrides[place.type]
+        }
+    }
+
+    const isGood = /^[A-Z a-z_]+$/g
+    const fixed = places.filter(p => p.type.match(isGood))
+    return fixed;
+}
+
+export const filterBadResults = (places: SearchPlace[]) => places
+    .filter(c => c.lat !== 0 && c.lon !== 0)

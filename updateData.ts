@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import fs from "fs";
 import { OSMResult } from "./osmPlace";
 import { SearchPlace } from "./searchPlace";
-import { deduplicate } from "./deduplicate";
+import { deduplicate, filterBadResults, fixups } from "./deduplicate";
 import { writeJsonFile, readJsonFile, writeFile } from "./files";
 import path from 'path'
 
@@ -75,7 +75,7 @@ const sources: DataSource[] = [
         getData: async () => fetch('https://raw.githubusercontent.com/fallaciousreasoning/nz-mountains/main/mountains.json').then(r => r.json()),
         transformData: data => {
             return Object.values(data)
-                .filter((mountain: any) => mountain.latlng?.length >= 2)    
+                .filter((mountain: any) => mountain.latlng?.length >= 2)
                 .map((mountain: any) => ({
                     name: mountain.name,
                     type: 'peak',
@@ -117,7 +117,9 @@ const joinOutputs = async () => {
         .then(r => r.flatMap(i => i)))
         .filter(r => !!r.name)
 
-    const deduplicated = deduplicate(result);
+    const fixed = fixups(result);
+    const filtered = filterBadResults(fixed);
+    const deduplicated = deduplicate(filtered);
 
     await writeJsonFile(outputFile, deduplicated);
     console.log("Wrote joined file", outputFile);
