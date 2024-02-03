@@ -112,11 +112,9 @@ const processSource = async (source: DataSource) => {
 
 const joinOutputs = async () => {
     console.log("Joining outputs and deduplicating");
-    const minFiles = sources.map(s => path.join(OUT_FOLDER, s.name + '.min.json'))
-
-    const result = (await Promise.all(minFiles.map(f => readJsonFile(f)))
-        .then(r => r.flatMap(i => i)))
-        .filter(r => !!r.name)
+    const dataSources = await Promise.all(sources.map(async source => [source, await readJsonFile(path.join(OUT_FOLDER, source.name + '.min.json'))]))
+    const result = dataSources.flatMap(([, data]) => data)
+        .filter(p => !!p.name)
 
     const fixed = fixups(result);
     const filtered = filterBadResults(fixed);
@@ -126,8 +124,11 @@ const joinOutputs = async () => {
 
     console.log("Wrote joined file", outputFile);
 
-    const exclude = ["hut", "peak"]
-    const noHutsOrMountains = deduplicated.filter(p => !exclude.includes(p.type))
+    const excludeSources: (typeof sources)[number]['name'][] = ["huts", "mountains"]
+    const exclude = new Set(dataSources.filter(([source]) => excludeSources.includes(source.name))
+        .map(([, data]) => data)
+        .flat())
+    const noHutsOrMountains = deduplicated.filter(p => !exclude.has(p))
     await writeJsonFile(outputFileWithExclusions, noHutsOrMountains)
     console.log("Wrote excluded file")
 }
