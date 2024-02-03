@@ -105,7 +105,7 @@ const processSource = async (source: DataSource) => {
 
     console.log(`Minifying ${source.name}`)
     const minified = source.transformData(data)
-    writeJsonFile(minName, minified)
+    await writeJsonFile(minName, minified)
     console.log(`Minified ${source.name}`)
 }
 
