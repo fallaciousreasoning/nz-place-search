@@ -1,7 +1,7 @@
 import { NowRequest, NowResponse } from '@vercel/node'
 import { SearchPlace } from '../searchPlace';
 
-const places: SearchPlace[] = require("../data/min_nz_places.json");
+const places: SearchPlace[] = require("../public/data/min_nz_places.json");
 
 function* filterPlaces(query: string) {
   const queries = [query.toLowerCase()];
