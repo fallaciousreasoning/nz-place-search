@@ -1,12 +1,12 @@
-import fetch from "node-fetch";
 import fs from "fs";
-import { OSMResult } from "./osmPlace";
-import { SearchPlace } from "./searchPlace";
+import fetch from "node-fetch";
+import path from 'path';
 import { deduplicate, filterBadResults, fixups } from "./deduplicate";
-import { writeJsonFile, readJsonFile, writeFile } from "./files";
-import path from 'path'
+import { readJsonFile, writeJsonFile } from "./files";
+import { SearchPlace } from "./searchPlace";
 
 const outputFile = 'data/min_nz_places.json'
+const outputFileWithExclusions = 'data/min_excluded_places.json'
 
 interface DataSource {
     name: string,
@@ -122,7 +122,13 @@ const joinOutputs = async () => {
     const deduplicated = deduplicate(filtered);
 
     await writeJsonFile(outputFile, deduplicated);
+
     console.log("Wrote joined file", outputFile);
+
+    const exclude = ["hut", "peak"]
+    const noHutsOrMountains = deduplicated.filter(p => !exclude.includes(p.type))
+    await writeJsonFile(outputFileWithExclusions, noHutsOrMountains)
+    console.log("Wrote excluded file")
 }
 
 (async () => {
