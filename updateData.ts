@@ -17,6 +17,34 @@ interface DataSource {
 
 const sources: DataSource[] = [
     {
+        name: 'huts',
+        getData: async () => fetch('https://api.doc.govt.nz/v2/huts?coordinates=wgs84', {
+            headers: {
+                'x-api-key': 'yNyjpuXvMJ1g2d0YEpUmW7VZhePMqbCv96GRjq8L'
+            }
+        }).then(r => r.json()),
+        transformData: (data) => data.map((hut: any) => ({
+            name: hut.name,
+            lat: hut.lat,
+            lon: hut.lon,
+            type: 'hut'
+        }))
+    },
+    {
+        name: 'mountains',
+        getData: async () => fetch('https://raw.githubusercontent.com/fallaciousreasoning/nz-mountains/main/mountains.json').then(r => r.json()),
+        transformData: data => {
+            return Object.values(data)
+                .filter((mountain: any) => mountain.latlng?.length >= 2)
+                .map((mountain: any) => ({
+                    name: mountain.name,
+                    type: 'peak',
+                    lat: parseFloat(mountain.latlng[0]),
+                    lon: parseFloat(mountain.latlng[1]),
+                }))
+        }
+    },
+    {
         name: 'osm',
         getData: () => fetch('https://www.overpass-api.de/api/interpreter?[out:json];node[natural](-47.9,165.9,-34.0,179.0);out;').then(r => r.json()),
         transformData: (data: any) => data.elements.map((place: any) => ({
@@ -57,34 +85,6 @@ const sources: DataSource[] = [
                 : undefined
         })).filter((p: SearchPlace) => !isNaN(p.lat) && !isNaN(p.lon))
     },
-    {
-        name: 'huts',
-        getData: async () => fetch('https://api.doc.govt.nz/v2/huts?coordinates=wgs84', {
-            headers: {
-                'x-api-key': 'yNyjpuXvMJ1g2d0YEpUmW7VZhePMqbCv96GRjq8L'
-            }
-        }).then(r => r.json()),
-        transformData: (data) => data.map((hut: any) => ({
-            name: hut.name,
-            lat: hut.lat,
-            lon: hut.lon,
-            type: 'hut'
-        }))
-    },
-    {
-        name: 'mountains',
-        getData: async () => fetch('https://raw.githubusercontent.com/fallaciousreasoning/nz-mountains/main/mountains.json').then(r => r.json()),
-        transformData: data => {
-            return Object.values(data)
-                .filter((mountain: any) => mountain.latlng?.length >= 2)
-                .map((mountain: any) => ({
-                    name: mountain.name,
-                    type: 'peak',
-                    lat: parseFloat(mountain.latlng[0]),
-                    lon: parseFloat(mountain.latlng[1]),
-                }))
-        }
-    }
 ]
 
 const processSource = async (source: DataSource) => {
