@@ -112,7 +112,7 @@ const processSource = async (source: DataSource) => {
 
 const joinOutputs = async () => {
     console.log("Joining outputs and deduplicating");
-    const minFiles = sources.map(s => path.join('data', s.name + '.min.json'))
+    const minFiles = sources.map(s => path.join(OUT_FOLDER, s.name + '.min.json'))
 
     const result = (await Promise.all(minFiles.map(f => readJsonFile(f)))
         .then(r => r.flatMap(i => i)))
