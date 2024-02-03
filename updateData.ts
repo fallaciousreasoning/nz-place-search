@@ -5,8 +5,9 @@ import { deduplicate, filterBadResults, fixups } from "./deduplicate";
 import { readJsonFile, writeJsonFile } from "./files";
 import { SearchPlace } from "./searchPlace";
 
-const outputFile = 'data/min_nz_places.json'
-const outputFileWithExclusions = 'data/min_excluded_places.json'
+const OUT_FOLDER = path.join('public', 'data')
+const outputFile = `${OUT_FOLDER}/min_nz_places.json`
+const outputFileWithExclusions = `${OUT_FOLDER}/min_excluded_places.json`
 
 interface DataSource {
     name: string,
@@ -89,7 +90,7 @@ const sources: DataSource[] = [
 const processSource = async (source: DataSource) => {
     console.log(`Processing ${source.name}`)
 
-    const baseName = path.join('data', source.name)
+    const baseName = path.join(OUT_FOLDER, source.name)
     const name = baseName + '.json'
     const minName = baseName + '.min.json'
 
@@ -132,7 +133,7 @@ const joinOutputs = async () => {
 }
 
 (async () => {
-    if (!fs.existsSync('data')) fs.mkdirSync('data')
+    if (!fs.existsSync(OUT_FOLDER)) fs.mkdirSync(OUT_FOLDER)
     for (const source of sources)
         await processSource(source)
 
